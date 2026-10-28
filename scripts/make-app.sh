@@ -1,8 +1,12 @@
 #!/bin/zsh
 # Build "AK820 Pro.app" from the SwiftPM targets (no Xcode project needed).
-# Usage: scripts/make-app.sh [--install]   (--install copies the app to ~/Applications)
+# Usage: scripts/make-app.sh [--install | --release]
+#   --install  copies the app to ~/Applications
+#   --release  builds for Apple Silicon and Intel (needs Xcode), leaves out the factory GIF, and zips the app
+#              into build.noindex/AK820-Pro-<version>.zip for a GitHub release
 set -euo pipefail
 cd "${0:A:h}/.."
+MODE="${1:-}"
 
 VERSION="1.1.0"
 # ".noindex": Spotlight skips this folder, so only the installed copy shows up in searches.
@@ -12,16 +16,18 @@ APP="build.noindex/AK820 Pro.app"
 # ran the app in compatibility mode with the old look instead of Liquid Glass.
 SDKV="$(xcrun --show-sdk-version)"
 LINK=(-Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker "$SDKV")
-swift build -c release --product AK820App "${LINK[@]}"
-swift build -c release --product ak820 "${LINK[@]}"
-BIN="$(swift build -c release --show-bin-path)"
+ARCH=()
+[[ "$MODE" == "--release" ]] && ARCH=(--arch arm64 --arch x86_64)
+swift build -c release "${ARCH[@]}" --product AK820App "${LINK[@]}"
+swift build -c release "${ARCH[@]}" --product ak820 "${LINK[@]}"
+BIN="$(swift build -c release "${ARCH[@]}" --show-bin-path)"
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN/AK820App" "$APP/Contents/MacOS/AK820 Pro"
 cp "$BIN/ak820" "$APP/Contents/Resources/ak820"          # the CLI, bundled for convenience
 # The factory GIF is AJAZZ's and isn't in the public repo; bundle it only if you put a copy in assets/.
-[[ -f assets/factory-boot.gif ]] && cp assets/factory-boot.gif "$APP/Contents/Resources/"
+[[ -f assets/factory-boot.gif && "$MODE" != "--release" ]] && cp assets/factory-boot.gif "$APP/Contents/Resources/"
 [[ -f assets/AppIcon.icns ]] || scripts/icon-from-image.sh
 cp assets/AppIcon.icns "$APP/Contents/Resources/"
 
@@ -51,7 +57,14 @@ codesign --force --sign - "$APP/Contents/Resources/ak820"
 codesign --force --sign - "$APP"
 echo "Built $APP"
 
-if [[ "${1:-}" == "--install" ]]; then
+if [[ "$MODE" == "--release" ]]; then
+    ZIP="build.noindex/AK820-Pro-${VERSION}.zip"
+    rm -f "$ZIP"
+    ditto -c -k --keepParent "$APP" "$ZIP"
+    echo "Zipped $ZIP"
+fi
+
+if [[ "$MODE" == "--install" ]]; then
     mkdir -p ~/Applications
     rm -rf ~/Applications/"AK820 Pro.app"
     cp -R "$APP" ~/Applications/
