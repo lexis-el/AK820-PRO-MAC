@@ -1,0 +1,4 @@
+[
+  ["tap:H", "tap:I", 50, "down:LeftShift", "tap:1", "up:LeftShift"],
+  ["down:LeftWin", "tap:Space", "up:LeftWin", 200, "tap:T", "tap:E", "tap:R", "tap:M", "tap:Enter"]
+]

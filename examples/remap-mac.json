@@ -1,0 +1,8 @@
+{
+  "CapsLock": "LeftCtrl",
+  "LeftWin": "LeftAlt",
+  "LeftAlt": "LeftWin",
+  "F1": "media:playpause",
+  "F2": "cmd+shift+4",
+  "PageDown": "macro:0"
+}

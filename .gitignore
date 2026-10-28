@@ -1,0 +1,8 @@
+.build/
+build/
+build.noindex/
+.DS_Store
+# Personal notes for Claude sessions
+CLAUDE.md
+# AJAZZ's files: not redistributable
+assets/factory-boot.gif

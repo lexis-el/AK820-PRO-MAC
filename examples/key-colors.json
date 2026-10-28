@@ -1,0 +1,6 @@
+{
+  "Esc": "FF0000",
+  "W": "00FFFF", "A": "00FFFF", "S": "00FFFF", "D": "00FFFF",
+  "Up": "FFFFFF", "Down": "FFFFFF", "Left": "FFFFFF", "Right": "FFFFFF",
+  "Enter": "00FF00"
+}
